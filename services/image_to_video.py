@@ -76,7 +76,8 @@ def process_image_to_video_v2(image_url, length, frame_rate, zoom_speed, job_id,
         logger.info(f"Original image dimensions: {width}x{height}")
 
         # Prepare the output path
-        output_path = os.path.join(STORAGE_PATH, f"{job_id}.mp4")
+        # output_path = os.path.join(STORAGE_PATH, f"{job_id}.mp4")
+        output_path = f"{job_id}.mp4"
 
         # Determine orientation and set appropriate dimensions
         if width > height:
@@ -93,18 +94,38 @@ def process_image_to_video_v2(image_url, length, frame_rate, zoom_speed, job_id,
         logger.info(f"Using scale dimensions: {scale_dims}, output dimensions: {output_dims}")
         logger.info(f"Video length: {length}s, Frame rate: {frame_rate}fps, Total frames: {total_frames}")
         logger.info(f"Zoom speed: {zoom_speed}/s, Final zoom factor: {zoom_factor}")
+        print("process", scale_dims, output_dims)
+
 
         # Prepare FFmpeg command
         cmd = [
-            'ffmpeg', '-framerate', str(frame_rate), '-loop', '1', '-i', image_path,
-            '-vf', f"scale={scale_dims},zoompan=z='min(1+({zoom_speed}*{length})*on/{total_frames}, {zoom_factor})':d={total_frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={output_dims}",
-            '-c:v', 'libx264', '-t', str(length), '-pix_fmt', 'yuv420p', output_path
+            'ffmpeg', 
+            '-framerate', str(frame_rate), 
+            '-loop', 
+            '1', 
+            '-i', 
+            image_path,
+            '-vf', 
+            f"scale={scale_dims},zoompan=z='min(1+({zoom_speed}*{length})*on/{total_frames}, {zoom_factor})':d={total_frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={output_dims}",
+            '-c:v', 
+            'libx264', 
+            '-t', 
+            str(length), 
+            '-pix_fmt', 
+            'yuv420p', 
+            output_path
         ]
-
+        print(cmd)
         logger.info(f"Running FFmpeg command: {' '.join(cmd)}")
 
         # Run FFmpeg command
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        # result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+        fout = result.stdin
+
+        fout.close()
+        result.wait()
+
         if result.returncode != 0:
             logger.error(f"FFmpeg command failed. Error: {result.stderr}")
             raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
@@ -112,7 +133,7 @@ def process_image_to_video_v2(image_url, length, frame_rate, zoom_speed, job_id,
         logger.info(f"Video created successfully: {output_path}")
 
         # Clean up input file
-        os.remove(image_path)
+        # os.remove(image_path)
 
         return output_path
     except Exception as e:
@@ -122,4 +143,4 @@ def process_image_to_video_v2(image_url, length, frame_rate, zoom_speed, job_id,
 
 
 
-    process_image_to_video_v2('evil_beautiful_queen.png', 3, 30, 3, 12345)
+process_image_to_video_v2('evil_beautiful_queen.png', 3, 30, .05, 12345)
