@@ -11,7 +11,7 @@ import mimetypes
 
 STORAGE_PATH = "/tmp/"
 
-def download_file(url, storage_path="/tmp/"):
+def download_file(url, storage_path="/tmp/", HEADERS={}, COOKIES={}):
     # Parse the URL to extract the file ID from the query parameters
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
@@ -26,17 +26,13 @@ def download_file(url, storage_path="/tmp/"):
     if not os.path.exists(storage_path):
         os.makedirs(storage_path)
     
+
+    if url.find("wikimedia.org") or url.find("wikipedia.org"):
+        HEADERS = {'User-Agent':'VideoGeneration/0.1; (https://github.com/andrecassal; interesting.stuff.robot@gmail.com)'}
     
-    # UA = 'Midjourney-image-downloader/0.0.1'
-    # HEADERS = {'User-Agent': UA}
-
-    # SESSION_TOKEN = None
-    # COOKIES = {'__Secure-next-auth.session-token': SESSION_TOKEN, '__cf_bm':'dsKAITdZBaf4Fxn.F6wpXdi_glT_qQLHBBhgjJPYmqE-1732485846-1.0.1.1-EuQYknxoJZrsswCQkefVaqQLmFweiAwvpWloUxx5rgYLf2rDhaYdYKb1NNK6DdkonTn5mtL29cMxge0fNBlLBA'}
-
-
 
     # Download the file
-    response = requests.get(url, stream=True)
+    response = requests.get(url, headers=HEADERS, cookies=COOKIES, stream=True)
     response.raise_for_status()
     content_type = response.headers['content-type']
     extension = mimetypes.guess_extension(content_type)

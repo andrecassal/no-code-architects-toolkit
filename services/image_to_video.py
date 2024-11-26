@@ -26,12 +26,10 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
         # Determine orientation and set appropriate dimensions
         # s_width, s_height = 7680, 4320
         scale = 1.5
+        s1_width, s1_height = 1080, 1920
 
         i_width, i_height = scale_to_cover(width, height, s1_width, s1_height)
-        s1_width, s1_height = 1080, 1920
         
-
-
         scale_dims = f"w={i_width}:h={i_height}"
 
         output_dims = f"{s1_width}:{s1_height}"
@@ -61,6 +59,7 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
             f"scale={scale_dims},crop={output_dims},pad={output_dims}:(( (ow - iw)/2 )):(( (oh - ih)/2 ))",
             # f"scale={scale_dims}",
             # f"scale={scale_dims},zoompan=z='max(1+{zoom_speed}*{total_frames}/on, {zoom_factor})':d={total_frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={output_dims}",
+            # f"scale={scale_dims},crop={output_dims},zoompan=z='1.5-on/duration*0.5':d=125:s={output_dims}",
             '-c:v', 
             'libx264', 
             '-t', 
